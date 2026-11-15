@@ -13,7 +13,19 @@ button.secondary{background:#284661;color:#e6f5ff}button:focus-visible{outline:3
 .msg{padding:13px;border-radius:10px;background:#1a3956;color:#e7f1fa;overflow-wrap:anywhere;white-space:pre-wrap}
 .hidden{display:none}.row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 0;border-bottom:1px solid #36506b}
 @media(max-width:760px){.grid{grid-template-columns:1fr}}
-</style></head><body>
+</style><script>
+/* Works both in standalone staging and mounted under the existing /enterprise path. */
+const RAJ_URL = (path) => {
+  if (typeof path !== "string" || !path.startsWith("/")) throw Error("Expected absolute application path");
+  const prefix = (location.pathname === "/enterprise" || location.pathname.startsWith("/enterprise/")) ? "/enterprise" : "";
+  return prefix + path;
+};
+document.addEventListener("DOMContentLoaded", () => {
+  for (const link of document.querySelectorAll('a[href^="/"]')) {
+    link.setAttribute("href", RAJ_URL(link.getAttribute("href")));
+  }
+});
+</script></head><body>
 <header><div><strong>◈ RAJ ENTERPRISE CLOUD</strong><small style="display:block">White-label Shop Owner Portal — Staging</small></div><a href="/">Platform homepage</a></header>
 <main><h1>Shop Owner Dashboard</h1><p>Manage your shop's branding, independent print requests, device licences and billing preferences.</p>
 <section id="registerBox" class="card"><h2>Activate invited shop-owner account</h2><p>Use the one-time invitation securely provided by the Super Admin. Only the approved shop's registered contact can receive an invitation.</p>
@@ -49,9 +61,9 @@ button.secondary{background:#284661;color:#e6f5ff}button:focus-visible{outline:3
 </main><script>
 const $=id=>document.getElementById(id);let token=null;let shop=null;
 function msg(id,v){$(id).textContent=typeof v==="string"?v:JSON.stringify(v,null,2)}
-async function api(path,options={}){let h={...(options.headers||{})};if(token)h.Authorization="Bearer "+token;if(options.body)h["Content-Type"]="application/json";const r=await fetch(path,{...options,headers:h});const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(typeof data.detail==="string"?data.detail:"Request failed");return data;}
+async function api(path,options={}){let h={...(options.headers||{})};if(token)h.Authorization="Bearer "+token;if(options.body)h["Content-Type"]="application/json";const r=await fetch(RAJ_URL(path),{...options,headers:h});const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(typeof data.detail==="string"?data.detail:"Request failed");return data;}
 $("register").onclick=async()=>{try{const r=await api("/api/v2/auth/register",{method:"POST",body:JSON.stringify({invitation:$("invitation").value,password:$("regPassword").value})});msg("regMsg","Owner account created. Sign in using shop URL and registered business email: "+r.shop_slug)}catch(e){msg("regMsg",e.message)}};
-$("login").onclick=async()=>{try{const data=await api("/api/v2/auth/login",{method:"POST",body:JSON.stringify({shop_slug:$("slug").value,email:$("email").value,password:$("password").value})});token=data.access_token;$("password").value="";shop=await api("/api/v2/owner/me");$("loginBox").classList.add("hidden");$("registerBox").classList.add("hidden");$("dashboard").classList.remove("hidden");$("shopTitle").textContent=shop.name;$("licenseDetail").textContent="Plan: "+(shop.license_plan||"not activated")+" • Active: "+shop.license_active;$("siteLink").href="/s/"+encodeURIComponent(shop.slug);$("qr").src="/api/v2/shops/"+encodeURIComponent(shop.slug)+"/qr.png";await refreshAll()}catch(e){msg("loginMsg",e.message)}};
+$("login").onclick=async()=>{try{const data=await api("/api/v2/auth/login",{method:"POST",body:JSON.stringify({shop_slug:$("slug").value,email:$("email").value,password:$("password").value})});token=data.access_token;$("password").value="";shop=await api("/api/v2/owner/me");$("loginBox").classList.add("hidden");$("registerBox").classList.add("hidden");$("dashboard").classList.remove("hidden");$("shopTitle").textContent=shop.name;$("licenseDetail").textContent="Plan: "+(shop.license_plan||"not activated")+" • Active: "+shop.license_active;$("siteLink").href=RAJ_URL("/s/"+encodeURIComponent(shop.slug));$("qr").src=RAJ_URL("/api/v2/shops/"+encodeURIComponent(shop.slug)+"/qr.png");await refreshAll()}catch(e){msg("loginMsg",e.message)}};
 $("logout").onclick=async()=>{try{await api("/api/v2/auth/logout",{method:"POST"})}catch(e){}token=null;shop=null;$("dashboard").classList.add("hidden");$("loginBox").classList.remove("hidden");$("registerBox").classList.remove("hidden")};
 $("saveBrand").onclick=async()=>{try{const data=await api("/api/v2/owner/appearance",{method:"PUT",body:JSON.stringify({headline:$("headline").value,description:$("description").value,city:$("city").value,primary_color:$("primary").value,accent_color:$("accent").value,logo_url:$("logo").value||null,public_listing:$("listing").checked})});msg("brandMsg",data)}catch(e){msg("brandMsg",e.message)}};
 $("makeDeviceInvite").onclick=async()=>{try{const r=await api("/api/v2/owner/devices/enrollment",{method:"POST"});msg("deviceMsg","Private enrollment code (expires in 20 minutes): "+r.enrollment_code+"\nUse with the registered Windows agent. Do not share publicly.")}catch(e){msg("deviceMsg",e.message)}};

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
-os.environ["ADMIN_API_TOKEN"] = "phase2-test-secret"
+os.environ["ADMIN_API_TOKEN"] = "phase1-test-secret"
 os.environ["CASHFREE_ENV"] = "sandbox"
 
 from fastapi.testclient import TestClient
@@ -13,7 +13,7 @@ import main
 from enterprise import ShopOwner, ShopAppearance, PrintOrder, RegisteredDevice
 
 client = TestClient(main.app)
-ADMIN = {"Authorization": "Bearer phase2-test-secret"}
+ADMIN = {"Authorization": "Bearer phase1-test-secret"}
 
 
 def create_shop(n):

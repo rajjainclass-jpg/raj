@@ -1,7 +1,7 @@
-name: Enterprise Phase 1 tests
+name: Enterprise phase tests
 on:
   push:
-    branches: [feature/enterprise-license-cashfree-phase1]
+    branches: [feature/enterprise-license-cashfree-phase1, feature/ultra-pro-max-phase2]
   pull_request:
 jobs:
   test:

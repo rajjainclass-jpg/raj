@@ -501,3 +501,24 @@ def get_billing_preference(owner: ShopOwner = Depends(require_owner), db: Sessio
     row = db.get(BillingPreference, owner.shop_id)
     return {"renewal_mode": row.renewal_mode if row else "manual",
             "mandate_status": row.mandate_status if row else "not_configured"}
+
+
+@router.post("/admin/domains/{hostname}/verify", dependencies=[Depends(require_admin)])
+def verify_domain(hostname: str, db: Session = Depends(db_session)):
+    # Only DNS TXT evidence is checked here; TLS and Render routing must still be provisioned.
+    import dns.resolver
+    domain = db.get(ShopDomain, hostname.lower().strip().rstrip("."))
+    if not domain:
+        raise HTTPException(404, "Domain request not found")
+    name = "_raj-enterprise." + domain.hostname
+    try:
+        answers = dns.resolver.resolve(name, "TXT", lifetime=5)
+        values = [b"".join(rr.strings).decode("utf-8", errors="ignore") for rr in answers]
+    except (dns.exception.DNSException, OSError):
+        raise HTTPException(409, "DNS verification record not found")
+    if domain.verify_token not in values:
+        raise HTTPException(409, "DNS record does not match")
+    domain.verified = True
+    db.commit()
+    return {"hostname": domain.hostname, "verified": True,
+            "next": "Provision custom domain and managed TLS in Render; routing is not automatic"}

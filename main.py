@@ -252,3 +252,25 @@ def license_status(shop_id: str, db: Session = Depends(db_session)):
     lic = db.get(License, shop_id)
     return {"shop_id": shop_id, "plan": lic.plan if lic else None,
             "valid_until": lic.valid_until.isoformat() if lic else None}
+
+
+# Phase 2: import additional tenant models after the primary schema and API are defined.
+from enterprise import router as enterprise_router
+Base.metadata.create_all(bind=engine)  # New tables in staging only; use Alembic migrations for production.
+app.include_router(enterprise_router)
+
+@app.get("/s/{slug}")
+def shop_page(slug: str):
+    # The frontend loads public shop data by slug; inactive shops return 404 from the API.
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{2,60}", slug):
+        raise HTTPException(404, "Invalid shop URL")
+    return FileResponse(Path(__file__).parent / "static" / "shop.html")
+
+@app.get("/owner")
+def owner_page():
+    return FileResponse(Path(__file__).parent / "static" / "owner.html")
+
+
+@app.get("/marketplace")
+def marketplace_page():
+    return FileResponse(Path(__file__).parent / "static" / "marketplace.html")

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Online Printing | RAJ Enterprise Partner</title>
+<style>
+:root{--primary:#16375C;--accent:#EAC46F;--bg:#061225;--text:#f6f8ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,Segoe UI,sans-serif}
+header,main,footer{max-width:960px;margin:auto;padding:22px}header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+h1{font-size:clamp(2.1rem,5vw,3.8rem);line-height:1.13;margin:8px 0}h2{margin:0 0 16px}
+small,p{color:#ccd9ea}a{color:var(--accent)}.pill{color:var(--accent);font-size:12px;letter-spacing:.15em;font-weight:700}
+.hero{background:linear-gradient(145deg,var(--primary),#081a30);border:1px solid #456382;border-radius:20px;padding:28px;margin:20px 0;display:grid;grid-template-columns:1fr auto;gap:16px}
+.hero img{width:120px;height:120px;object-fit:contain;border-radius:18px;background:white}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{padding:22px;background:#112744;border:1px solid #39526c;border-radius:15px}.field{display:flex;flex-direction:column;margin:10px 0;gap:6px}
+input,textarea,select{width:100%;background:#08192e;color:white;border:1px solid #6785a5;border-radius:9px;padding:12px;font:inherit}label{font-weight:600;font-size:14px}
+button{background:var(--accent);color:#0e223b;font-weight:800;border:none;border-radius:10px;padding:13px 20px;cursor:pointer}
+button:hover{filter:brightness(1.08)}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.msg{padding:12px;background:#1c3855;border-radius:9px;color:#e9f1ff;margin-top:12px;overflow-wrap:anywhere;white-space:pre-wrap}
+.hide{display:none!important}@media(max-width:600px){.cols,.hero{grid-template-columns:1fr}.hero img{width:84px;height:84px}}
+</style></head><body><header><strong id="brand">RAJ ENTERPRISE PARTNER</strong><a href="/">Explore platform</a></header>
+<main>
+<div id="loading" class="msg">Loading shop…</div>
+<div id="main" class="hide">
+<section class="hero"><div><div class="pill">ONLINE PRINT REQUESTS</div><h1 id="shopName"></h1><p id="headline"></p><p id="description"></p><small id="city"></small></div><div><img id="logo" alt="Shop logo" class="hide"></div></section>
+<div class="cols">
+<section class="card"><h2>Send a print request</h2><p><strong>Document uploads and online customer payments are not active in this pilot.</strong> This form records the requested print settings only. Confirm files and price directly with the shop.</p>
+<form id="orderForm">
+<div class="field"><label for="name">Your name</label><input id="name" maxlength="90" minlength="2" required autocomplete="name"></div>
+<div class="field"><label for="pages">Document pages</label><input id="pages" type="number" min="1" max="200" value="1" required></div>
+<div class="field"><label for="copies">Copies</label><input id="copies" type="number" min="1" max="100" value="1" required></div>
+<div class="field"><label for="colorMode">Print preference</label><select id="colorMode"><option value="bw">Black and white</option><option value="colour">Colour</option></select></div>
+<div class="field"><label for="notes">Instructions (optional)</label><textarea id="notes" maxlength="300" rows="2"></textarea></div>
+<button type="submit">Submit print request</button></form><div class="msg" id="orderMessage" role="status" aria-live="polite">No payment is requested on this page.</div></section>
+<section class="card"><h2>Track your request</h2><p>Use the order ID and private tracking token supplied after submission.</p>
+<form id="trackForm">
+<div class="field"><label for="orderId">Order ID</label><input id="orderId" required></div>
+<div class="field"><label for="trackingToken">Private tracking token</label><input id="trackingToken" required></div>
+<button type="submit">Check status</button></form><div class="msg" id="trackMessage" role="status" aria-live="polite">Tracking tokens are private. Do not share them publicly.</div>
+<hr style="border:0;border-top:1px solid #39526c;margin:25px 0"><h2>Shop QR code</h2><p>Scans open this particular shop's website.</p><img id="qr" style="width:180px;max-width:100%" alt="Scannable shop website QR code"></section>
+</div></div></main><footer><small>Powered by RAJ Enterprise Cloud • Prototype printing requests • No payment collected</small></footer>
+<script>
+const $=id=>document.getElementById(id);
+const slug=decodeURIComponent(location.pathname.split('/').pop());
+let shop;
+async function api(path,opts){const r=await fetch(path,opts);const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.detail||"Request failed");return data;}
+async function start(){try{
+shop=await api("/api/v2/shops/"+encodeURIComponent(slug));
+document.title=shop.name+" | Online Print Requests";
+$("brand").textContent=shop.name;$("shopName").textContent=shop.name;
+$("headline").textContent=shop.headline;$("description").textContent=shop.description;
+$("city").textContent=shop.city?("📍 "+shop.city):"";
+document.documentElement.style.setProperty("--primary",shop.primary_color);document.documentElement.style.setProperty("--accent",shop.accent_color);
+if(shop.logo_url){$("logo").src=shop.logo_url;$("logo").classList.remove("hide")}
+$("qr").src="/api/v2/shops/"+encodeURIComponent(slug)+"/qr.png";$("main").classList.remove("hide");$("loading").classList.add("hide")
+}catch(e){$("loading").textContent="Shop not available: "+e.message}}
+start();
+$("orderForm").addEventListener("submit",async e=>{e.preventDefault();$("orderMessage").textContent="Submitting…";try{
+const data=await api("/api/v2/shops/"+encodeURIComponent(slug)+"/orders",{method:"POST",headers:{"Content-Type":"application/json"},
+body:JSON.stringify({customer_name:$("name").value,pages:Number($("pages").value),copies:Number($("copies").value),color_mode:$("colorMode").value,note:$("notes").value})});
+$("orderId").value=data.order_id;$("trackingToken").value=data.tracking_token;
+$("orderMessage").textContent="Request received. Order ID: "+data.order_id+"\nPrivate tracking token: "+data.tracking_token+"\nKeep both safe. No document uploaded and no payment taken.";
+}catch(e){$("orderMessage").textContent=e.message}});
+$("trackForm").addEventListener("submit",async e=>{e.preventDefault();try{const id=encodeURIComponent($("orderId").value.trim());
+const token=$("trackingToken").value.trim();
+const data=await api("/api/v2/shops/"+encodeURIComponent(slug)+"/orders/"+id+"/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token})});
+$("trackMessage").textContent="Current status: "+data.status+"\nDocument uploaded: No";
+}catch(e){$("trackMessage").textContent=e.message}});
+</script></body></html>

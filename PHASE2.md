@@ -33,7 +33,7 @@ These are **staging capabilities** and must not be treated as production-ready w
 - `POST /api/v2/owner/domains`, `GET /api/v2/owner/domains`
 - `POST /api/v2/admin/domains/{hostname}/verify` — check DNS TXT record
 - `POST /api/v2/shops/{slug}/orders` — metadata-only request
-- `GET /api/v2/shops/{slug}/orders/{id}?tracking_token=...` — status; do not share token
+- `POST /api/v2/shops/{slug}/orders/{id}/track with JSON body containing the private token` — status; do not share token
 - `GET /api/v2/owner/orders`, `PATCH /api/v2/owner/orders/{id}`
 - `POST /api/v2/owner/devices/enrollment`, `POST /api/v2/devices/enroll`
 - `GET /api/v2/devices/me`, `GET /api/v2/devices/queue`
@@ -73,3 +73,21 @@ Use Python 3.12 with `pip install -r requirements-dev.txt`, then run `python -m 
 
 ### Security reminders
 The previous Cashfree secret shared in chat must be rotated, never committed. Licence ownership/financial responsibility must be handled by an eligible adult/guardian and authorized merchant account.
+
+## Windows agent staging pilot
+
+After the owner generates a single-use device enrollment code in `/owner`, run on the registered shop PC:
+
+```powershell
+py -3.12 agent_windows.py --server https://YOUR-STAGING-SERVICE.onrender.com --enroll "Epson Print Desk"
+```
+
+Then use the returned device credential with:
+
+```powershell
+py -3.12 agent_windows.py --server https://YOUR-STAGING-SERVICE.onrender.com --poll
+```
+
+This agent displays licensed queue **metadata only** and does **not** download documents or print files. Device credentials must be stored securely; this proof-of-concept stores nothing on disk.
+
+Browse `/marketplace` to search approved public partner shops.

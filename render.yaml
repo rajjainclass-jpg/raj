@@ -1,0 +1,21 @@
+# Example Render Blueprint for a SEPARATE STAGING service.
+# Do not connect this blueprint to the existing live site without an integration audit.
+services:
+  - type: web
+    name: raj-enterprise-staging
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_API_TOKEN
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: CASHFREE_ENV
+        value: sandbox
+      - key: CASHFREE_APP_ID
+        sync: false
+      - key: CASHFREE_SECRET_KEY
+        sync: false

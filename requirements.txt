@@ -6,3 +6,5 @@ psycopg[binary]>=3.2,<4
 python-dotenv>=1,<2
 python-dateutil>=2.9,<3
 pydantic>=2,<3
+pwdlib[argon2]>=0.2,<1
+qrcode[pil]>=8,<9

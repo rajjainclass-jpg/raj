@@ -22,7 +22,19 @@ button{padding:13px 22px;border:0;border-radius:10px;color:#04192e;background:#6
 footer{font-size:13px;color:var(--muted);border-top:1px solid #2d5377;margin-top:60px}
 @media(max-width:740px){.grid{grid-template-columns:1fr 1fr}.search{grid-template-columns:1fr 1fr}.search button{grid-column:span 2}}
 @media(max-width:500px){.grid,.search{grid-template-columns:1fr}.search button{grid-column:auto}}
-</style></head>
+</style><script>
+/* Works both in standalone staging and mounted under the existing /enterprise path. */
+const RAJ_URL = (path) => {
+  if (typeof path !== "string" || !path.startsWith("/")) throw Error("Expected absolute application path");
+  const prefix = (location.pathname === "/enterprise" || location.pathname.startsWith("/enterprise/")) ? "/enterprise" : "";
+  return prefix + path;
+};
+document.addEventListener("DOMContentLoaded", () => {
+  for (const link of document.querySelectorAll('a[href^="/"]')) {
+    link.setAttribute("href", RAJ_URL(link.getAttribute("href")));
+  }
+});
+</script></head>
 <body><header><div class="brand">RAJ <span>ENTERPRISE</span> MARKETPLACE</div><a href="/">Platform home</a></header>
 <main><p style="color:#f0c874;font-weight:700;letter-spacing:1.5px">APPROVED PRINT SHOPS</p>
 <h1>Find a printing shop.<br>Order from its own website.</h1><p>Each shop has its own name, theme, QR code and independent order records. Only active, opted-in partner shops appear.</p>
@@ -33,11 +45,11 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid #2d5377;margin-top
 const $=id=>document.getElementById(id);
 function el(name,cls,text){const node=document.createElement(name);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node}
 async function search(){const q=$("q").value.trim(),city=$("city").value.trim();const params=new URLSearchParams({search:q,city});$("status").textContent="Searching…";$("results").replaceChildren();
-try{const res=await fetch("/api/v2/marketplace?"+params);if(!res.ok)throw Error("Marketplace unavailable");
+try{const res=await fetch(RAJ_URL("/api/v2/marketplace?"+params));if(!res.ok)throw Error("Marketplace unavailable");
 const shops=(await res.json()).shops;
 for(const s of shops){const box=el("article","card");box.style.setProperty("--shop-accent",s.accent_color||"#65c1ff");
 box.append(el("div","accent"));if(s.logo_url){const img=el("img","logo");img.src=s.logo_url;img.alt=s.name+" logo";box.append(img)}
-box.append(el("h2","",s.name));if(s.city)box.append(el("p","",s.city));if(s.description)box.append(el("p","",s.description));const link=el("a","shoplink","Open shop website");link.href="/s/"+encodeURIComponent(s.slug);box.append(link);$("results").append(box)}
+box.append(el("h2","",s.name));if(s.city)box.append(el("p","",s.city));if(s.description)box.append(el("p","",s.description));const link=el("a","shoplink","Open shop website");link.href=RAJ_URL("/s/"+encodeURIComponent(s.slug));box.append(link);$("results").append(box)}
 $("status").textContent=shops.length?shops.length+" approved shop(s) found.":"No approved shops match your search.";
 }catch(e){$("status").textContent=e.message}}
 $("searchForm").addEventListener("submit",e=>{e.preventDefault();search()});search();

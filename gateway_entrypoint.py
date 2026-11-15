@@ -1,0 +1,1 @@
+"""Fail-closed production gateway ASGI entrypoint.\n\nUse only after original printing app is present and audited:\nRAJ_LEGACY_ASGI=original_printing.main:app\nRAJ_ENTERPRISE_ASGI=main:app\nuvicorn gateway_entrypoint:app ...\n"""\nfrom same_site_gateway import load_gateway_from_environment\n\napp = load_gateway_from_environment()\n

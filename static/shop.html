@@ -17,7 +17,19 @@ button{background:var(--accent);color:#0e223b;font-weight:800;border:none;border
 button:hover{filter:brightness(1.08)}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .msg{padding:12px;background:#1c3855;border-radius:9px;color:#e9f1ff;margin-top:12px;overflow-wrap:anywhere;white-space:pre-wrap}
 .hide{display:none!important}@media(max-width:600px){.cols,.hero{grid-template-columns:1fr}.hero img{width:84px;height:84px}}
-</style></head><body><header><strong id="brand">RAJ ENTERPRISE PARTNER</strong><a href="/">Explore platform</a></header>
+</style><script>
+/* Works both in standalone staging and mounted under the existing /enterprise path. */
+const RAJ_URL = (path) => {
+  if (typeof path !== "string" || !path.startsWith("/")) throw Error("Expected absolute application path");
+  const prefix = (location.pathname === "/enterprise" || location.pathname.startsWith("/enterprise/")) ? "/enterprise" : "";
+  return prefix + path;
+};
+document.addEventListener("DOMContentLoaded", () => {
+  for (const link of document.querySelectorAll('a[href^="/"]')) {
+    link.setAttribute("href", RAJ_URL(link.getAttribute("href")));
+  }
+});
+</script></head><body><header><strong id="brand">RAJ ENTERPRISE PARTNER</strong><a href="/">Explore platform</a></header>
 <main>
 <div id="loading" class="msg">Loading shop…</div>
 <div id="main" class="hide">
@@ -42,7 +54,7 @@ button:hover{filter:brightness(1.08)}button:focus-visible,input:focus-visible,se
 const $=id=>document.getElementById(id);
 const slug=decodeURIComponent(location.pathname.split('/').pop());
 let shop;
-async function api(path,opts){const r=await fetch(path,opts);const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.detail||"Request failed");return data;}
+async function api(path,opts){const r=await fetch(RAJ_URL(path),opts);const data=await r.json().catch(()=>({}));if(!r.ok)throw Error(data.detail||"Request failed");return data;}
 async function start(){try{
 shop=await api("/api/v2/shops/"+encodeURIComponent(slug));
 document.title=shop.name+" | Online Print Requests";
@@ -51,7 +63,7 @@ $("headline").textContent=shop.headline;$("description").textContent=shop.descri
 $("city").textContent=shop.city?("📍 "+shop.city):"";
 document.documentElement.style.setProperty("--primary",shop.primary_color);document.documentElement.style.setProperty("--accent",shop.accent_color);
 if(shop.logo_url){$("logo").src=shop.logo_url;$("logo").classList.remove("hide")}
-$("qr").src="/api/v2/shops/"+encodeURIComponent(slug)+"/qr.png";$("main").classList.remove("hide");$("loading").classList.add("hide")
+$("qr").src=RAJ_URL("/api/v2/shops/"+encodeURIComponent(slug)+"/qr.png");$("main").classList.remove("hide");$("loading").classList.add("hide")
 }catch(e){$("loading").textContent="Shop not available: "+e.message}}
 start();
 $("orderForm").addEventListener("submit",async e=>{e.preventDefault();$("orderMessage").textContent="Submitting…";try{

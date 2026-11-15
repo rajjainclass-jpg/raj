@@ -1,7 +1,7 @@
 name: Enterprise phase tests
 on:
   push:
-    branches: [feature/enterprise-license-cashfree-phase1, feature/ultra-pro-max-phase2]
+    branches: [feature/enterprise-license-cashfree-phase1, feature/ultra-pro-max-phase2, feature/same-render-integration-preflight]
   pull_request:
 jobs:
   test:

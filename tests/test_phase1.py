@@ -6,6 +6,7 @@ import base64
 import hashlib
 import hmac
 import json
+from uuid import uuid4
 
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["ADMIN_API_TOKEN"] = "phase1-test-secret"
@@ -19,7 +20,7 @@ headers = {"Authorization": "Bearer phase1-test-secret"}
 def test_initial_status_and_shop_approval():
     assert client.get("/health").status_code == 200
     response = client.post("/api/shop-applications", json={
-        "name": "Demo Print Shop", "slug": "demo-shop-test",
+        "name": "Demo Print Shop", "slug": "demo-" + uuid4().hex[:12],
         "email": "demo@example.com", "phone": "9876543210"
     })
     assert response.status_code == 201

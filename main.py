@@ -269,3 +269,8 @@ def shop_page(slug: str):
 @app.get("/owner")
 def owner_page():
     return FileResponse(Path(__file__).parent / "static" / "owner.html")
+
+
+@app.get("/marketplace")
+def marketplace_page():
+    return FileResponse(Path(__file__).parent / "static" / "marketplace.html")

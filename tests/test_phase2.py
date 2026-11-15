@@ -71,9 +71,9 @@ def test_tenant_isolation_branding_marketplace_and_tracking():
     assert all(x["id"] != oid for x in client.get("/api/v2/owner/orders", headers=a2).json())
     assert client.patch("/api/v2/owner/orders/"+oid, headers=a2, json={"status":"printing"}).status_code == 404
     assert client.patch("/api/v2/owner/orders/"+oid, headers=a1, json={"status":"printing"}).status_code == 200
-    assert client.get("/api/v2/shops/"+slug2+"/orders/"+oid+"?tracking_token="+data["tracking_token"]).status_code == 404
-    assert client.get("/api/v2/shops/"+slug1+"/orders/"+oid+"?tracking_token=wrong").status_code == 404
-    assert client.get("/api/v2/shops/"+slug1+"/orders/"+oid+"?tracking_token="+data["tracking_token"]).json()["status"] == "printing"
+    assert client.post("/api/v2/shops/"+slug2+"/orders/"+oid+"/track", json={"token":data["tracking_token"]}).status_code == 404
+    assert client.post("/api/v2/shops/"+slug1+"/orders/"+oid+"/track", json={"token":"x"*24}).status_code == 404
+    assert client.post("/api/v2/shops/"+slug1+"/orders/"+oid+"/track", json={"token":data["tracking_token"]}).json()["status"] == "printing"
     # Domain request is private; actual verified DNS and TLS are separate stages.
     dom = client.post("/api/v2/owner/domains", headers=a1, json={"hostname":"pilot-example.org"})
     assert dom.status_code == 200, dom.text

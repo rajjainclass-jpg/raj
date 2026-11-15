@@ -80,5 +80,3 @@ def load_gateway_from_environment() -> Starlette:
     return build_gateway(resolve_asgi(legacy), resolve_asgi(enterprise))
 
 
-# The ASGI entrypoint is deliberately fail-closed without an audited legacy app.
-app = load_gateway_from_environment()

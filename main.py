@@ -20,6 +20,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, create_engine, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 load_dotenv()
 APP_ID = os.getenv("CASHFREE_APP_ID", "")
@@ -32,7 +33,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./raj_enterprise_dev.db")
 if CF_ENV not in ("sandbox", "production"):
     raise RuntimeError("CASHFREE_ENV must be sandbox or production")
 CF_BASE = "https://sandbox.cashfree.com/pg" if CF_ENV == "sandbox" else "https://api.cashfree.com/pg"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}, pool_pre_ping=True)
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}, poolclass=StaticPool if DATABASE_URL == "sqlite:///:memory:" else None, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 class Base(DeclarativeBase):

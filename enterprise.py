@@ -159,6 +159,10 @@ class OrderInput(BaseModel):
     note: str = Field(default="", max_length=300)
 
 
+class TrackingRequest(BaseModel):
+    token: str = Field(min_length=20, max_length=100)
+
+
 class OrderUpdate(BaseModel):
     status: str = Field(pattern=r"^(printing|ready|collected|cancelled)$")
 
@@ -378,11 +382,11 @@ def create_print_request(slug: str, body: OrderInput, db: Session = Depends(db_s
             "message": "Print request recorded. No document has been uploaded or paid for."}
 
 
-@router.get("/shops/{slug}/orders/{order_id}")
-def public_order_status(slug: str, order_id: str, tracking_token: str, db: Session = Depends(db_session)):
+@router.post("/shops/{slug}/orders/{order_id}/track")
+def public_order_status(slug: str, order_id: str, body: TrackingRequest, db: Session = Depends(db_session)):
     s = db.scalar(select(Shop).where(Shop.slug == slug))
     order = db.get(PrintOrder, order_id)
-    if not s or not order or order.shop_id != s.id or not secrets.compare_digest(order.tracking_hash, digest(tracking_token)):
+    if not s or not order or order.shop_id != s.id or not secrets.compare_digest(order.tracking_hash, digest(body.token)):
         raise HTTPException(404, "Request not found")
     return {"order_id": order.id, "shop": s.name, "status": order.status, "document_uploaded": False}
 

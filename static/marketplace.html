@@ -1,0 +1,44 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Discover Print Shops — RAJ Enterprise Marketplace</title>
+<meta name="description" content="Find approved online printing shops powered by RAJ Enterprise Cloud">
+<style>
+:root{color-scheme:dark;--bg:#08152a;--panel:#102642;--line:#2d5377;--text:#f0f7ff;--muted:#b0c4da}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 70% 10%,#163e63,transparent 40%),var(--bg);color:var(--text);font:16px/1.5 system-ui,Segoe UI,Arial}
+header,main,footer{max-width:1160px;margin:auto;padding:23px}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px}
+a{color:#ace2ff}.brand{font-weight:800}.brand span{color:#f0c874}
+h1{font-size:clamp(2rem,5vw,4rem);letter-spacing:-1px;line-height:1.1;margin:14px 0}
+p{color:var(--muted)}.box{background:#122742;border:1px solid var(--line);border-radius:16px;padding:22px}
+.search{display:grid;grid-template-columns:1.4fr 1fr auto;gap:12px;align-items:end}
+label{display:block;font-weight:650;font-size:13px;margin-bottom:5px}
+input{padding:13px 15px;border:1px solid #5e82a1;border-radius:9px;background:#07162b;color:white;width:100%;font:inherit}
+button{padding:13px 22px;border:0;border-radius:10px;color:#04192e;background:#65c1ff;font-weight:800;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px;margin-top:24px}
+.card{border:1px solid var(--line);border-radius:16px;padding:22px;background:linear-gradient(135deg,#172f4e,#0c1e36)}
+.accent{height:5px;border-radius:5px;margin-bottom:20px;background:var(--shop-accent,#65c1ff)}
+.logo{height:64px;width:64px;object-fit:contain;background:#fff;border-radius:14px}
+.shoplink{display:inline-block;background:#285f93;border-radius:9px;padding:10px 16px;color:#fff;text-decoration:none;margin-top:12px;font-weight:700}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid #2d5377;margin-top:60px}
+@media(max-width:740px){.grid{grid-template-columns:1fr 1fr}.search{grid-template-columns:1fr 1fr}.search button{grid-column:span 2}}
+@media(max-width:500px){.grid,.search{grid-template-columns:1fr}.search button{grid-column:auto}}
+</style></head>
+<body><header><div class="brand">RAJ <span>ENTERPRISE</span> MARKETPLACE</div><a href="/">Platform home</a></header>
+<main><p style="color:#f0c874;font-weight:700;letter-spacing:1.5px">APPROVED PRINT SHOPS</p>
+<h1>Find a printing shop.<br>Order from its own website.</h1><p>Each shop has its own name, theme, QR code and independent order records. Only active, opted-in partner shops appear.</p>
+<div class="box"><form id="searchForm" class="search"><div><label for="q">Shop name</label><input id="q" placeholder="Search shop"></div><div><label for="city">City or area</label><input id="city" placeholder="Kareli"></div><button type="submit">Find shops</button></form></div>
+<div id="results" class="grid" aria-live="polite"></div><div id="status" class="empty" role="status">Loading approved shops…</div>
+</main><footer>RAJ Enterprise Cloud Pro — Staging partner directory. Shop listings and order functionality are under development.</footer>
+<script>
+const $=id=>document.getElementById(id);
+function el(name,cls,text){const node=document.createElement(name);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node}
+async function search(){const q=$("q").value.trim(),city=$("city").value.trim();const params=new URLSearchParams({search:q,city});$("status").textContent="Searching…";$("results").replaceChildren();
+try{const res=await fetch("/api/v2/marketplace?"+params);if(!res.ok)throw Error("Marketplace unavailable");
+const shops=(await res.json()).shops;
+for(const s of shops){const box=el("article","card");box.style.setProperty("--shop-accent",s.accent_color||"#65c1ff");
+box.append(el("div","accent"));if(s.logo_url){const img=el("img","logo");img.src=s.logo_url;img.alt=s.name+" logo";box.append(img)}
+box.append(el("h2","",s.name));if(s.city)box.append(el("p","",s.city));if(s.description)box.append(el("p","",s.description));const link=el("a","shoplink","Open shop website");link.href="/s/"+encodeURIComponent(s.slug);box.append(link);$("results").append(box)}
+$("status").textContent=shops.length?shops.length+" approved shop(s) found.":"No approved shops match your search.";
+}catch(e){$("status").textContent=e.message}}
+$("searchForm").addEventListener("submit",e=>{e.preventDefault();search()});search();
+</script></body></html>

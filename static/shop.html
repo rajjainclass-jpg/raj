@@ -61,8 +61,8 @@ $("orderId").value=data.order_id;$("trackingToken").value=data.tracking_token;
 $("orderMessage").textContent="Request received. Order ID: "+data.order_id+"\nPrivate tracking token: "+data.tracking_token+"\nKeep both safe. No document uploaded and no payment taken.";
 }catch(e){$("orderMessage").textContent=e.message}});
 $("trackForm").addEventListener("submit",async e=>{e.preventDefault();try{const id=encodeURIComponent($("orderId").value.trim());
-const token=encodeURIComponent($("trackingToken").value.trim());
-const data=await api("/api/v2/shops/"+encodeURIComponent(slug)+"/orders/"+id+"?tracking_token="+token);
+const token=$("trackingToken").value.trim();
+const data=await api("/api/v2/shops/"+encodeURIComponent(slug)+"/orders/"+id+"/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token})});
 $("trackMessage").textContent="Current status: "+data.status+"\nDocument uploaded: No";
 }catch(e){$("trackMessage").textContent=e.message}});
 </script></body></html>

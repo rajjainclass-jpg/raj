@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Raj Kirana grocery pickup and secure online checkout in Bamhani, Kareli.">
+  <title>Raj Kirana | Secure checkout</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js" defer></script>
+  <script src="/checkout.js" defer></script>
+</head>
+<body>
+  <main>
+    <header><span class="mark">R</span><div><p class="eyebrow">BAMHANI · KARELI</p><h1>Raj Kirana</h1></div></header>
+    <section class="intro"><p class="eyebrow">SHOP PICKUP</p><h2>Your neighbourhood grocery shop.</h2><p>Order groceries in the RAJ Kirana Customer app, pay securely, and collect your order from the shop.</p></section>
+    <section class="catalog"><h2>Products</h2><div id="products"><p class="muted">Loading the shop catalogue…</p></div></section>
+    <section id="checkout" class="card" aria-labelledby="checkout-title">
+      <p class="eyebrow">SECURE ONLINE PAYMENT</p><h2 id="checkout-title">Complete your checkout</h2>
+      <p id="status" role="status">Open a pending order in the Customer app and choose Pay with Cashfree to start.</p>
+      <p id="reference" class="muted"></p>
+      <button id="pay" hidden>Continue to Cashfree</button>
+      <a id="return" class="secondary" href="rajkirana-online://payment-return" hidden>Return to RAJ Kirana app</a>
+      <p class="note">Payment details are entered on Cashfree. Your order is marked paid only after the shop server verifies the payment.</p>
+    </section>
+    <section class="contact"><h2>Visit or contact the shop</h2><p>Bamhani, Tehsil Kareli, District Narsinghpur, Madhya Pradesh, India.</p><p><a href="tel:+917987580921">+91 79875 80921</a></p><p class="muted">For pickup, product availability or help with an existing order, contact the shop using your order reference.</p></section>
+    <footer>Raj Kirana · Groceries for shop pickup</footer>
+  </main>
+</body>
+</html>
